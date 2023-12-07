@@ -29,7 +29,10 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res, next) => {
   const task = req.body;
-  
+  console.log(req.body);
+
+  task.task_completed = Boolean(task.task_completed);
+
   try {
     const newTask = await taskModel.create(task);
     res.status(201).json(newTask);

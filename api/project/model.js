@@ -23,8 +23,6 @@ function getById(id) {
 }
 
 function create(project) {
-  
-
   return db("projects")
     .insert({ ...project })
     .then(([id]) => getById(id));

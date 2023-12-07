@@ -1,7 +1,8 @@
 // build your `Task` model here
 const db = require("../../data/dbConfig");
-function getAll() {
-  return db("tasks")
+
+async function getAll() {
+  const tasks = await db("tasks")
     .join("projects", "tasks.project_id", "projects.project_id")
     .select(
       "tasks.task_id",
@@ -12,6 +13,11 @@ function getAll() {
       "projects.project_description as project_description",
       "projects.project_completed as project_completed"
     );
+
+  return tasks.map((task) => ({
+    ...task,
+    task_completed: !!task.task_completed,
+  }));
 }
 
 function getById(id) {
@@ -20,19 +26,37 @@ function getById(id) {
     .join("projects", "tasks.project_id", "projects.project_id")
     .select(
       "tasks.*",
-      "projects.project_name as project_name", 
+      "projects.project_name as project_name",
       "projects.project_description as project_description"
     )
     .first();
 }
 
 function create(task) {
-  task.task_completed = Boolean(task.task_completed);
+  console.log("Received task:", task);
+
+  task.task_completed =
+    task.task_completed != null ? !!task.task_completed : false;
+
+  console.log("Converted task_completed:", task.task_completed);
 
   return db("tasks")
     .insert(task)
     .then(([task_id]) => {
+      console.log("Inserted task with id:", task_id);
       return getById(task_id);
+    })
+    .then((updatedTask) => {
+      console.log(updatedTask);
+      const task = {
+        ...updatedTask,
+        task_completed:
+          updatedTask.task_completed != null
+            ? !!updatedTask.task_completed
+            : false,
+      };
+      console.log(task);
+      return task;
     });
 }
 
